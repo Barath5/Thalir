@@ -9,6 +9,8 @@ from torch.utils.data import Dataset, DataLoader
 from nltk_utils import bag_of_words, tokenize, stem
 from model import NeuralNet
 
+from tqdm import tqdm
+
 with open('intents.json', 'r') as f:
     intents = json.load(f)
 
@@ -92,7 +94,8 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # Train the model
-for epoch in range(num_epochs):
+loader = tqdm(range(num_epochs))
+for epoch in loader:
     for (words, labels) in train_loader:
         words = words.to(device)
         labels = labels.to(dtype=torch.long).to(device)
@@ -108,8 +111,9 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         
-    if (epoch+1) % 100 == 0:
-        print (f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
+        loader.set_postfix(loss = loss.detach().cpu())
+    # if (epoch+1) % 100 == 0:
+    #     print (f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
 
 
 print(f'final loss: {loss.item():.4f}')
